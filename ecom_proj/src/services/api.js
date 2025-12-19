@@ -6,14 +6,14 @@ const getAuthToken = () => {
   return user.token;
 };
 
-// Import the global popup function
+// Import global popup
 import { showPopup } from '../components/GlobalPopup';
 
 // Helper function for API requests
 const apiRequest = async (endpoint, options = {}) => {
   const url = `${API_BASE_URL}${endpoint}`;
   const token = getAuthToken();
-  
+
   const config = {
     headers: {
       'Content-Type': 'application/json',
@@ -25,23 +25,29 @@ const apiRequest = async (endpoint, options = {}) => {
 
   try {
     const response = await fetch(url, config);
-    const data = await response.json();
-    
+
+    // Safely parse JSON
+    const contentType = response.headers.get('content-type');
+    let data;
+    if (contentType && contentType.includes('application/json')) {
+      data = await response.json();
+    } else {
+      const text = await response.text();
+      console.error('Expected JSON but got:', text);
+      throw new Error('Invalid JSON response from server');
+    }
+
     if (!response.ok) {
       const errorMessage = data.message || 'Something went wrong';
       showPopup(errorMessage, 'error');
       throw new Error(errorMessage);
     }
-    
-    // Show success message for successful operations
-    if (options.method === 'POST') {
-      showPopup(data.message || 'Operation completed successfully!', 'success');
-    } else if (options.method === 'PUT') {
-      showPopup(data.message || 'Updated successfully!', 'success');
-    } else if (options.method === 'DELETE') {
-      showPopup(data.message || 'Deleted successfully!', 'success');
-    }
-    
+
+    // Show success messages
+    if (options.method === 'POST') showPopup(data.message || 'Operation completed successfully!', 'success');
+    if (options.method === 'PUT') showPopup(data.message || 'Updated successfully!', 'success');
+    if (options.method === 'DELETE') showPopup(data.message || 'Deleted successfully!', 'success');
+
     return data;
   } catch (error) {
     if (!error.message.includes('fetch')) {
@@ -58,52 +64,34 @@ export const productsAPI = {
   getAll: () => apiRequest('/products'),
   getById: (id) => apiRequest(`/products/${id}`),
   getByCategory: (category) => apiRequest(`/products/category/${category}`),
-  create: (productData) => apiRequest('/products', {
-    method: 'POST',
-    body: JSON.stringify(productData),
-  }),
+  create: (productData) => apiRequest('/products', { method: 'POST', body: JSON.stringify(productData) }),
   delete: (id) => apiRequest(`/products/${id}`, { method: 'DELETE' }),
 };
 
 // Users API
 export const usersAPI = {
-  register: (userData) => apiRequest('/users/register', {
-    method: 'POST',
-    body: JSON.stringify(userData),
-  }),
-  login: (credentials) => apiRequest('/users/login', {
-    method: 'POST',
-    body: JSON.stringify(credentials),
-  }),
+  register: (userData) => apiRequest('/users/register', { method: 'POST', body: JSON.stringify(userData) }),
+  login: (credentials) => apiRequest('/users/login', { method: 'POST', body: JSON.stringify(credentials) }),
   getProfile: () => apiRequest('/users/profile'),
-  updateProfile: (userData) => apiRequest('/users/profile', {
-    method: 'PUT',
-    body: JSON.stringify(userData),
-  }),
+  updateProfile: (userData) => apiRequest('/users/profile', { method: 'PUT', body: JSON.stringify(userData) }),
 };
 
 // Orders API
 export const ordersAPI = {
-  create: (orderData) => apiRequest('/orders', {
-    method: 'POST',
-    body: JSON.stringify(orderData),
-  }),
+  create: (orderData) => apiRequest('/orders', { method: 'POST', body: JSON.stringify(orderData) }),
   getMyOrders: () => apiRequest('/orders/my-orders'),
   getById: (id) => apiRequest(`/orders/${id}`),
   createQuickOrder: (productData) => apiRequest('/orders', {
     method: 'POST',
     body: JSON.stringify({
-      items: [{
-        productId: productData._id,
-        quantity: 1
-      }],
+      items: [{ productId: productData._id, quantity: 1 }],
       shippingAddress: {
         name: 'Customer',
         street: '123 Main St',
         city: 'City',
         state: 'State',
         zipCode: '12345',
-        country: 'Country'
+        country: 'India'
       },
       paymentMethod: 'cash_on_delivery'
     }),
