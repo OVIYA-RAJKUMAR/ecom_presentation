@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { productsAPI, ordersAPI } from '../services/api.js';
 import { showPopup } from './GlobalPopup.jsx';
 
@@ -13,6 +13,7 @@ export default function Products({
   requireAuth
 }) {
   const [products, setProducts] = useState([]);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchProducts = async () => {

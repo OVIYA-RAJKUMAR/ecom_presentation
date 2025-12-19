@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import { productsAPI, ordersAPI } from '../services/api';
 
 export default function Product({ orders, setOrders, user, requireAuth }) {
   const { id } = useParams();
+  const navigate = useNavigate();
   const [product, setProduct] = useState(null);
   const [loading, setLoading] = useState(true);
 
@@ -66,10 +67,8 @@ export default function Product({ orders, setOrders, user, requireAuth }) {
     try {
       await ordersAPI.createQuickOrder(product);
       setOrders([...orders, product]);
-      alert('Order placed successfully!');
     } catch (error) {
       console.error('Error placing order:', error);
-      alert('Failed to place order');
     }
   };
 

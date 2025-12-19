@@ -23,7 +23,7 @@ jobs:
           key: ${{ secrets.EC2_KEY }}
           script: |
             cd ~/ecom-frontend-backend-integration
-            git pull origin master
+            git pull origin main
 
             cd ecom_proj/backend
             npm install
